@@ -1,0 +1,51 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
+.env/
+
+# Distribution / packaging
+.Python
+build/
+dist/
+*.egg-info/
+
+# Logs and debugging
+logs/
+*.log
+debug.log
+
+# IDE / Editor files
+.vscode/
+.idea/
+*.sublime-workspace
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Testing / Coverage
+.tox/
+.nox/
+.coverage
+coverage.xml
+*.cover
+htmlcov/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# MyPy type checking
+.mypy_cache/
+
+# Pytest cache
+.pytest_cache/
+
+# Other temporary files
+*.swp
+*.swo
+*.bak
+*.tmp
