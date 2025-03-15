@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.io.wavfile as waves
 
-def anolog_input_wav(file, channel=0, begin=16000, end=17200):
+def anolog_input_wav(file, channel=0, begin=0, end=17200):
     """
     Lee un archivo de audio WAV y extrae un segmento específico.
     Retorna los tiempos, los valores del audio en ese intervalo y grafica la señal.

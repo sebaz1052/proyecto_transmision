@@ -1,6 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
-
 def mpsk( sample_values:np.ndarray, M: int ):
     # Parámetros
     k = 1  # Número de ciclos por símbolo (ajustable) [1,10]
