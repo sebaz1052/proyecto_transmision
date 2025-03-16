@@ -4,13 +4,14 @@ from scipy.signal import square
 
 
 def text_to_signal(text:str):
-
+    """Devuelte el tiempo, la señal cuadrada representado ascii (8 bits) y arreglos con la información qu e
+    contienen la señal en tiempos y valores"""
     binary_values = [format(ord(c), '08b') for c in text]
     binary_sequence = ''.join(binary_values)  
 
-    fs = 1000  # Frecuencia de muestreo para la señal continua
-    bit_duration = 0.01  # Duración de cada bit en segundos
-    t_total = bit_duration * len(binary_sequence)  # Tiempo total
+    fs = 1000  
+    bit_duration = 0.01 
+    t_total = bit_duration * len(binary_sequence) 
 
     t = np.linspace(0, t_total, int(fs * t_total), endpoint=False)
 
@@ -21,16 +22,16 @@ def text_to_signal(text:str):
         end_idx = int((i + 1) * bit_duration * fs)
         signal[start_idx:end_idx] = 1 if bit == '1' else 0  # Nivel alto o bajo según el bit
 
-    # *** MUESTREO EN LA MITAD DEL PERIODO ***
-    sample_times = np.array([(i + 0.5) * bit_duration for i in range(len(binary_sequence))])  # Mitad de cada bit
-    sample_values = np.interp(sample_times, t, signal)  # Obtener valores en esos instantes
+
+    sample_times = np.array([(i + 0.5) * bit_duration for i in range(len(binary_sequence))])  
+    sample_values = np.interp(sample_times, t, signal) 
 
     return t, signal, sample_times, sample_values
 
 
 
 if __name__ == '__main__':
-    # Graficar la señal original y los puntos muestreados
+
    
     t, signal, sample_times, sample_values =  text_to_signal('Hello world')
     m = 3 #Numero de divisiones para MPSK
