@@ -24,6 +24,12 @@ def ask_modulate(baseband_signal, t, carrier_freq=100, a1=1.0):
     return modulated_signal
 
 
+def ask_modulate_analog(analog_signal, t, carrier_freq=100, a1=1.0, threshold=0.0):
+    carrier = np.cos(2 * np.pi * carrier_freq * t)
+    modulated_signal = np.where(analog_signal > threshold, a1 * carrier, 0.0)
+    return modulated_signal
+
+
 if __name__ == '__main__':
     # Ejemplo: Usar una señal digital simple (onda cuadrada) generada manualmente.
     fs = 1000  # Frecuencia de muestreo

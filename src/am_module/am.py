@@ -25,6 +25,13 @@ def am_modulate(baseband_signal, t, carrier_freq=100, bias=0.5, modulation_index
     return modulated_signal
 
 
+def am_modulate_analog(analog_signal, t, carrier_freq=100, bias=0.5, modulation_index=0.5):
+    envelope = bias + modulation_index * analog_signal
+    carrier = np.cos(2 * np.pi * carrier_freq * t)
+    modulated_signal = envelope * carrier
+    return modulated_signal
+
+
 if __name__ == '__main__':
     # Ejemplo de prueba: generar una onda baseband digital simple (onda cuadrada)
     fs = 1000  # Frecuencia de muestreo
