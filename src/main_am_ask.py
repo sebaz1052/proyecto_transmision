@@ -14,15 +14,15 @@ if __name__ == '__main__':
     # Genera la señal portadora
     carrier = np.cos(2*np.pi*carrier_freq*t)
 
-    # Bloque para modulacion ASK (on-off keying)
-    a1 = 1.0  # Amplitud para bit '1'; para bit '0' se transmite 0
-    modulated_signal = ask_modulate(digital_signal, t, carrier_freq, a1)
+    ## Bloque para modulacion ASK (on-off keying) ##
+    # a1 = 1.0  # Amplitud para bit '1'; para bit '0' se transmite 0
+    # modulated_signal = ask_modulate(digital_signal, t, carrier_freq, a1)
 
-    # Bloque para modulacion AM
-    # bias = 0.5  # Desplazamiento para asegurar que la envolvente sea positiva
-    # modulation_index = 0.5  # Factor de modulacion que escala la señal base
-    # modulated_signal = am_modulate(
-    #    digital_signal, t, carrier_freq, bias, modulation_index)
+    ## Bloque para modulacion AM ##
+    bias = 0.5  # Desplazamiento para asegurar que la envolvente sea positiva
+    modulation_index = 0.5  # Factor de modulacion que escala la señal base
+    modulated_signal = am_modulate(
+        digital_signal, t, carrier_freq, bias, modulation_index)
 
     # Construccion de la grafica
     fig, axs = plt.subplots(3, 1, figsize=(10, 4), sharex=True)
