@@ -1,14 +1,13 @@
 import sys
 import numpy as np
-from PyQt5.QtWidgets import (
-    QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QComboBox, QPushButton
-)
+from digital_input_module.digital_input import text_to_signal
+from analog_input_module.analog_input import anolog_input_wav
+from am_module.am import am_modulate, am_modulate_analog
+from ask_module.ask import ask_modulate, ask_modulate_analog
+from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QComboBox, QPushButton
+
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
-from src.digital_input_module.digital_input import text_to_signal
-from src.analog_input_module.analog_input import anolog_input_wav
-from src.am_module.am import am_modulate, am_modulate_analog
-from src.ask_module.ask import ask_modulate, ask_modulate_analog
 
 
 class MainWindow(QMainWindow):

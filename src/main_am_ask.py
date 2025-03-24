@@ -1,94 +1,151 @@
+import sys
+import os
+import numpy as np
 from digital_input_module.digital_input import text_to_signal
 from analog_input_module.analog_input import anolog_input_wav
 from am_module.am import am_modulate, am_modulate_analog
 from ask_module.ask import ask_modulate, ask_modulate_analog
-import numpy as np
-import matplotlib.pyplot as plt
+from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QComboBox, QPushButton, QLineEdit
+from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
+from PyQt5.QtCore import QUrl
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.figure import Figure
+
+
+class MainWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Interfaz de Modulación")
+        self.setGeometry(100, 100, 800, 600)
+
+        # Widget central
+        central_widget = QWidget()
+        self.setCentralWidget(central_widget)
+        main_layout = QVBoxLayout(central_widget)
+
+        # Panel de controles
+        control_layout = QHBoxLayout()
+        main_layout.addLayout(control_layout)
+
+        # Selector de fuente de señal
+        signal_label = QLabel("Tipo de Señal:")
+        self.signal_combo = QComboBox()
+        self.signal_combo.addItems(["Digital", "Analógica"])
+        self.signal_combo.currentIndexChanged.connect(self.update_signal_input)
+        control_layout.addWidget(signal_label)
+        control_layout.addWidget(self.signal_combo)
+
+        # Campo de texto para la señal digital
+        self.text_input = QLineEdit()
+        self.text_input.setPlaceholderText(
+            "Ingresa el texto para la señal digital")
+        control_layout.addWidget(self.text_input)
+
+        # Reproductor de audio para señal analógica
+        self.audio_player = QMediaPlayer()
+        self.play_button = QPushButton("Reproducir Audio")
+        self.play_button.clicked.connect(self.play_audio)
+        control_layout.addWidget(self.play_button)
+
+        # Selector de modulación
+        modulation_label = QLabel("Modulación:")
+        self.modulation_combo = QComboBox()
+        self.modulation_combo.addItems(["AM", "ASK"])
+        control_layout.addWidget(modulation_label)
+        control_layout.addWidget(self.modulation_combo)
+
+        # Botón para generar las gráficas
+        self.generate_button = QPushButton("Generar Gráficas")
+        self.generate_button.clicked.connect(self.generate_plots)
+        control_layout.addWidget(self.generate_button)
+
+        # Área de gráficas usando Matplotlib embebido
+        self.figure = Figure(figsize=(5, 4))
+        self.canvas = FigureCanvas(self.figure)
+        main_layout.addWidget(self.canvas)
+
+        # Inicializar visibilidad de los elementos
+        self.update_signal_input()
+
+    def update_signal_input(self):
+        """Muestra el campo de texto si es señal digital o el botón de audio si es analógica."""
+        if self.signal_combo.currentText() == "Digital":
+            self.text_input.show()
+            self.play_button.hide()
+        else:
+            self.text_input.hide()
+            self.play_button.show()
+
+    def play_audio(self):
+        """Reproduce el audio predeterminado."""
+        audio_path = "./AudioPrueba.wav"  # Asegúrate de que el archivo existe en esta ruta
+        if not os.path.exists(audio_path):
+            print(f"Error: El archivo '{audio_path}' no existe.")
+        self.audio_player.setMedia(
+            QMediaContent(QUrl.fromLocalFile(audio_path)))
+        self.audio_player.play()
+
+    def generate_plots(self):
+        fs = 1000  # Frecuencia de muestreo
+        carrier_freq = 100  # Frecuencia de la portadora en Hz
+
+        # Según la fuente seleccionada: digital o analógica
+        if self.signal_combo.currentText() == "Digital":
+            text = self.text_input.text() if self.text_input.text() else "Hello World"
+            t, baseband_signal, sample_times, sample_vals = text_to_signal(
+                text)
+        else:
+            file = "../AudioPrueba.wav"
+            t, baseband_signal = anolog_input_wav(
+                file, start_time=0, end_time=2)
+
+        carrier = np.cos(2 * np.pi * carrier_freq * t)
+        modulation_type = self.modulation_combo.currentText()
+
+        if self.signal_combo.currentText() == "Digital":
+            if modulation_type == "AM":
+                bias = 0.5
+                modulation_index = 0.5
+                modulated_signal = am_modulate(
+                    baseband_signal, t, carrier_freq, bias, modulation_index)
+            else:
+                a1 = 1.0
+                modulated_signal = ask_modulate(
+                    baseband_signal, t, carrier_freq, a1)
+        else:
+            if modulation_type == "AM":
+                bias = 0.5
+                modulation_index = 0.5
+                modulated_signal = am_modulate_analog(
+                    baseband_signal, t, carrier_freq, bias, modulation_index)
+            else:
+                a1 = 1.0
+                threshold = 0.0
+                modulated_signal = ask_modulate_analog(
+                    baseband_signal, t, carrier_freq, a1, threshold)
+
+        self.figure.clear()
+        ax1 = self.figure.add_subplot(3, 1, 1)
+        ax1.plot(t, baseband_signal, color='blue')
+        ax1.set_title("Señal moduladora")
+        ax1.grid(True)
+
+        ax2 = self.figure.add_subplot(3, 1, 2)
+        ax2.plot(t, carrier, color='orange')
+        ax2.set_title("Señal portadora")
+        ax2.grid(True)
+
+        ax3 = self.figure.add_subplot(3, 1, 3)
+        ax3.plot(t, modulated_signal, color='green')
+        ax3.set_title(f"Señal modulada ({modulation_type})")
+        ax3.set_xlabel("Tiempo (s)")
+        ax3.grid(True)
+
+        self.canvas.draw()
+
 
 if __name__ == '__main__':
-    # -----------------------------------------------------
-    # Selección de la fuente de la señal moduladora:
-    # 'digital' => a partir de texto (señal digital: 0/1)
-    # 'analog'  => a partir de un archivo WAV (señal analógica)
-    source_type = 'analog'
-
-    # -----------------------------------------------------
-    # Parámetros comunes
-    carrier_freq = 100  # Frecuencia de la portadora en Hz
-
-    if source_type == 'digital':
-        # Para la fuente digital se utiliza la función que convierte texto en señal digital
-        text = "Hello World"
-        t, baseband_signal, sample_times, sample_vals = text_to_signal(text)
-    else:
-        # Para la fuente analógica se lee un archivo WAV
-        # Reemplaza 'ruta_del_audio.wav' con la ruta real a tu archivo WAV
-        file = './AudioPrueba.wav'
-        t, baseband_signal = anolog_input_wav(file, start_time=0, end_time=2)
-
-    # Generar la señal portadora
-    carrier = np.cos(2 * np.pi * carrier_freq * t)
-
-    # -----------------------------------------------------
-    # Selección del tipo de modulación:
-    # 'am'  => modulación en amplitud (AM)
-    # 'ask' => modulación por desplazamiento de amplitud (ASK, on–off keying)
-    modulation_type = 'ask'
-
-    # -----------------------------------------------------
-    # Aplicar la modulación según la fuente y el tipo seleccionado
-    if source_type == 'digital':
-        # Fuente digital: ya contamos con la señal binaria (0/1)
-        if modulation_type == 'am':
-            bias = 0.5             # Bias para asegurar envolvente positiva
-            modulation_index = 0.5  # Factor que escala la señal base
-            modulated_signal = am_modulate(
-                baseband_signal, t, carrier_freq, bias, modulation_index)
-        else:  # ASK
-            a1 = 1.0  # Amplitud cuando el bit es '1'
-            modulated_signal = ask_modulate(
-                baseband_signal, t, carrier_freq, a1)
-    else:
-        # Fuente analógica: usamos la señal continua leída del archivo WAV
-        if modulation_type == 'am':
-            bias = 0.5
-            modulation_index = 0.5
-            # Función para modulación AM de señal analógica
-            modulated_signal = am_modulate_analog(
-                baseband_signal, t, carrier_freq, bias, modulation_index)
-        else:
-            a1 = 1.0
-            threshold = 0.0  # Umbral para determinar si se "enciende" la portadora
-            # Función para modulación ASK de señal analógica (convertida a on/off mediante umbral)
-            modulated_signal = ask_modulate_analog(
-                baseband_signal, t, carrier_freq, a1, threshold)
-
-    # -----------------------------------------------------
-    # Graficar las 3 señales: la señal moduladora, la portadora y la señal modulada
-    fig, axs = plt.subplots(3, 1, figsize=(10, 8), sharex=True)
-
-    # 1. Señal moduladora (baseband)
-    axs[0].plot(t, baseband_signal, label="Señal moduladora", color="blue")
-    axs[0].set_title("Señal moduladora (Baseband)")
-    axs[0].set_ylabel("Amplitud")
-    axs[0].legend()
-    axs[0].grid(True)
-
-    # 2. Señal portadora
-    axs[1].plot(t, carrier, label="Señal portadora", color="orange")
-    axs[1].set_title("Señal portadora")
-    axs[1].set_ylabel("Amplitud")
-    axs[1].legend()
-    axs[1].grid(True)
-
-    # 3. Señal modulada (AM o ASK)
-    axs[2].plot(t, modulated_signal,
-                label=f"Señal modulada ({modulation_type.upper()})", color="green")
-    axs[2].set_title(f"Señal modulada ({modulation_type.upper()})")
-    axs[2].set_xlabel("Tiempo (s)")
-    axs[2].set_ylabel("Amplitud")
-    axs[2].legend()
-    axs[2].grid(True)
-
-    plt.tight_layout()
-    plt.show()
+    app = QApplication(sys.argv)
+    window = MainWindow()
+    window.show()
+    sys.exit(app.exec_())
