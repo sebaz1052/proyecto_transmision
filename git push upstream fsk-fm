@@ -1,0 +1,9 @@
+[33ma0c5f6c[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mfsk-fm[m[33m, [m[1;31morigin/fsk-fm[m[33m)[m Merge branch 'fsk-fm' of https://github.com/sebaz1052/proyecto_transmision into fsk-fm
+[33mae3dbe4[m creacion de clases
+[33m9f00034[m Integración main_fsk_fm y actualización de FM y FSK
+[33m41bbc3d[m Implementación de las modulaciones a las clases
+[33m23ed9d4[m[33m ([m[1;31mupstream/fsk-fm[m[33m)[m (Add) project requirements.txt
+[33mce58e7f[m (Add) Project Structure
+[33m442baa8[m (Add) gitignore for python
+[33m27c0e25[m Audio segmentation and graphing code
+[33ma853533[m first commit
